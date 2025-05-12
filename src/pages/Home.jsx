@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar/Navbar";
 import HeroBanner from "../components/HeroBanner";
 import ProductCarousel from "../components/ProductCarousel/ProductCarousel";
 import { DISCOUNT_PRODUCTS, POPULAR_PRODUCTS } from "../data/mockProducts";
+import Footer from "../components/Footer";
 
 const HomePage = () => {
   return (
@@ -31,6 +32,7 @@ const HomePage = () => {
         <ProductCarousel title="Popular Products" products={POPULAR_PRODUCTS} />
         {/* Footer will be added later */}
       </Container>
+      <Footer/>
     </Box>
   );
 };
