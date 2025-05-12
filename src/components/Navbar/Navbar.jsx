@@ -1,27 +1,60 @@
 import React, { useState } from "react";
-import { 
-  AppBar, 
-  Toolbar, 
+import {
+  AppBar,
+  Toolbar,
   Container,
-  Box, 
-  IconButton, 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemButton, 
-  ListItemText, 
-  useMediaQuery, 
-  useTheme 
+  Box,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Collapse,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
-import { Menu } from "lucide-react";
+import { Menu, ChevronDown, ChevronRight } from "lucide-react";
 
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
 import NavbarActions from "./NavbarActions";
 import CategoriesMenu from "./CategoriesMenu";
 
+// Mock data for categories (same as in CategoriesMenu)
+const CATEGORIES = {
+  medicine: {
+    label: "Medicines",
+    subcategories: [
+      "Fever & Pain Management",
+      "Cough & Cold",
+      "Digestive Health",
+      "Vitamins & Supplements",
+      "Skin Care",
+      "Diabetes Care",
+      "Heart Health",
+    ],
+  },
+  surgical: {
+    label: "Surgical Items",
+    subcategories: [
+      "Masks & Face Shields",
+      "Gloves",
+      "First Aid",
+      "Bandages & Dressings",
+      "Syringes & Needles",
+      "Medical Devices",
+      "Personal Protective Equipment",
+    ],
+  },
+};
+
 const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openCategories, setOpenCategories] = useState({
+    medicine: false,
+    surgical: false
+  });
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -34,6 +67,37 @@ const Navbar = () => {
     }
 
     setDrawerOpen(open);
+  };
+
+  const toggleCategory = (category) => {
+    setOpenCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const renderCategoryDrawerItems = () => {
+    return Object.entries(CATEGORIES).map(([key, category]) => (
+      <React.Fragment key={key}>
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => toggleCategory(key)}>
+            <ListItemText primary={category.label} />
+            {openCategories[key] ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={openCategories[key]} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {category.subcategories.map((subcat) => (
+              <ListItem key={subcat} sx={{ pl: 4 }}>
+                <ListItemButton>
+                  <ListItemText primary={subcat} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
+      </React.Fragment>
+    ));
   };
 
   return (
@@ -73,7 +137,7 @@ const Navbar = () => {
             </Box>
           </Toolbar>
         </Container>
-        
+
         {!isMobile && <CategoriesMenu />}
 
         {isMobile && (
@@ -88,32 +152,24 @@ const Navbar = () => {
         <Box
           sx={{ width: 250 }}
           role="presentation"
-          onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
           <List>
             <ListItem>
-              <ListItemText primary="Categories" primaryTypographyProps={{ fontWeight: "bold" }} />
+              <ListItemText 
+                primary="Categories" 
+                primaryTypographyProps={{ fontWeight: "bold" }} 
+              />
             </ListItem>
-            
-            <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemText primary="Medicines" />
-              </ListItemButton>
-            </ListItem>
-            
-            <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemText primary="Surgical Items" />
-              </ListItemButton>
-            </ListItem>
+
+            {renderCategoryDrawerItems()}
 
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemText primary="Offers" />
               </ListItemButton>
             </ListItem>
-            
+
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemText primary="Upload Prescription" />

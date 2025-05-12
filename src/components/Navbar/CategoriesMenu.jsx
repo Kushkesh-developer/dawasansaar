@@ -9,7 +9,9 @@ import {
   MenuItem, 
   ClickAwayListener, 
   Divider, 
-  Typography 
+  Typography,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
 import { ChevronDown } from "lucide-react";
 
@@ -45,6 +47,8 @@ const CategoryMenu = ({ category }) => {
   const [open, setOpen] = useState(false);
   const anchorRef = React.useRef(null);
   const categoryData = CATEGORIES[category];
+  const theme = useTheme();
+  const isMobileScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -67,7 +71,11 @@ const CategoryMenu = ({ category }) => {
           textTransform: "none", 
           fontSize: "1rem",
           fontWeight: 500, 
-          color: "text.primary" 
+          color: "text.primary",
+          ...(isMobileScreen && { 
+            width: '100%', 
+            justifyContent: 'space-between' 
+          })
         }}
       >
         {categoryData.label}
@@ -76,14 +84,24 @@ const CategoryMenu = ({ category }) => {
         open={open}
         anchorEl={anchorRef.current}
         role={undefined}
-        placement="bottom-start"
+        placement={isMobileScreen ? "bottom" : "bottom-start"}
         transition
         disablePortal
-        style={{ zIndex: 1300 }}
+        style={{ 
+          zIndex: 1300, 
+          width: isMobileScreen ? '100%' : 250 
+        }}
       >
         {({ TransitionProps }) => (
           <Grow {...TransitionProps}>
-            <Paper sx={{ width: 250, maxHeight: 400, overflow: 'auto' }}>
+            <Paper 
+              sx={{ 
+                width: isMobileScreen ? '100%' : 250, 
+                maxHeight: 400, 
+                overflow: 'auto',
+                margin: isMobileScreen ? '0 16px' : 0
+              }}
+            >
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList autoFocusItem={open} id={`${category}-menu`}>
                   <MenuItem disabled>
@@ -108,6 +126,9 @@ const CategoryMenu = ({ category }) => {
 };
 
 const CategoriesMenu = () => {
+  const theme = useTheme();
+  const isMobileScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
     <Box 
       display="flex" 
@@ -122,10 +143,12 @@ const CategoriesMenu = () => {
       <Box 
         sx={{ 
           display: "flex", 
+          flexDirection: isMobileScreen ? 'column' : 'row',
           gap: 2, 
           maxWidth: 1200, 
           width: "100%", 
           px: 2, 
+          alignItems: isMobileScreen ? 'stretch' : 'center',
           justifyContent: { xs: "center", md: "flex-start" } 
         }}
       >
