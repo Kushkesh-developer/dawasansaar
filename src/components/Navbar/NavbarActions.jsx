@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { Upload, ShoppingCart, User } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { Link } from "react-router-dom"; // ✅ Add this import
 
 const NavbarActions = () => {
   const { user, logout } = useAuth();
@@ -37,7 +38,11 @@ const NavbarActions = () => {
       </Button>
 
       <Tooltip title="Shopping Cart">
-        <IconButton aria-label="cart">
+        <IconButton
+          component={Link}     // ✅ Enable navigation
+          to="/cart"           // ✅ Route to /cart
+          aria-label="cart"
+        >
           <Badge badgeContent={0} color="primary">
             <ShoppingCart size={isMobile ? 20 : 24} />
           </Badge>

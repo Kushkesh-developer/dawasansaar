@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from "./pages/Home";
+import CartPage from "./pages/CartPage";
 
 // Create a custom theme for Dawa Sansaar
 const theme = createTheme({
@@ -57,6 +58,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/cart" element={<CartPage />} />
             {/* Additional routes will be added here */}
           </Routes>
         </BrowserRouter>
