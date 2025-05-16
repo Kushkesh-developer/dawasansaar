@@ -5,70 +5,25 @@ import {
   Snackbar, Alert
 } from '@mui/material';
 import { 
-  ShoppingBag, Trash2, Plus, Minus, ChevronRight, 
+  ShoppingBag, Trash2, Plus, Minus, ChevronRight, ChevronLeft, 
   Heart, Tag, CreditCard, Home
 } from 'lucide-react';
-
-// Mock product data
-const initialCartItems = [
-  { 
-    id: 1, 
-    name: "EMUNZ Oral Suspension 5ml", 
-    manufacturer: "Mfr: Hbc Lifesciences Pvt Ltd",
-    price: 242.55, 
-    originalPrice: 269.50,
-    discount: 26.95,
-    quantity: 5,
-    image: "/api/placeholder/80/80",
-    delivery: "Delivery between MAY 15-MAY 16"
-  },
-  { 
-    id: 2, 
-    name: "Stayfree Secure Dry Cover with Wings Sanitary Pads (XL) 6's", 
-    manufacturer: "Mfr: Johnson & Johnson Pvt Ltd",
-    price: 42.30, 
-    originalPrice: 45.00,
-    discount: 2.70,
-    quantity: 1,
-    image: "/api/placeholder/80/80",
-    delivery: "Delivery between MAY 16-MAY 17"
-  }
-];
-
-// Promo codes for the application
-const validPromoCodes = [
-  { code: "NMSNEW", discount: 0.25, description: "Flat 25% OFF on First Order" },
-  { code: "HEALTH10", discount: 0.10, description: "10% OFF on all products" },
-  { code: "WELCOME15", discount: 0.15, description: "15% OFF up to ₹100" }
-];
-
-// Banner content for slideshow
-const banners = [
-  {
-    title: "NMSNEW - FLAT 25% OFF on Your First Meds* Order",
-    color: "#8E44AD",
-    code: "NMSNEW",
-    description: "Place your first order and get Flat 25% off + Up to 10% cash-in-wallet & free shipping"
-  },
-  {
-    title: "Become NetMeds First Member",
-    color: "#E74C3C",
-    description: "Join membership to save much more! Exclusive offers designed for you"
-  },
-  {
-    title: "Free Delivery on Orders Above ₹99",
-    color: "#2E86C1",
-    description: "No minimum order value for medicines. Order now!"
-  }
-];
+import ProductCard from '../components/ProductCard/ProductCard';  // Import the ProductCard component
+import { 
+  initialCartItems, 
+  validPromoCodes, 
+  banners, 
+  suggestedMedicines 
+} from '../data/mockcart'; // Import from centralized mock data
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [cartItems, setCartItems] = useState(initialCartItems); // Start with cart items
   const [usePromoCode, setUsePromoCode] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [suggestedScrollPosition, setSuggestedScrollPosition] = useState(0);
 
   // Calculate cart totals
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -101,14 +56,11 @@ const CartPage = () => {
 
   // Handle "Continue Shopping" button click
   const handleContinueShopping = () => {
-    // In a real app, we would use router navigation
-    // For this demo, we'll show a message
     setSnackbar({
       open: true,
       message: 'Redirecting to homepage...',
       severity: 'info'
     });
-    // Simulate redirect after a delay
     setTimeout(() => {
       setSnackbar({
         open: true,
@@ -156,6 +108,19 @@ const CartPage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Handle suggested products carousel navigation
+  const handleSuggestedScroll = (direction) => {
+    const scrollAmount = 250 * 3; // Scroll 3 cards at a time
+    const visibleCards = 3; // Number of cards visible at once
+    const maxScroll = Math.max(0, (suggestedMedicines.length - visibleCards) * 250);
+    
+    if (direction === 'left' && suggestedScrollPosition > 0) {
+      setSuggestedScrollPosition(Math.max(0, suggestedScrollPosition - scrollAmount));
+    } else if (direction === 'right' && suggestedScrollPosition < maxScroll) {
+      setSuggestedScrollPosition(Math.min(maxScroll, suggestedScrollPosition + scrollAmount));
+    }
+  };
+
   // Auto sliding banner effect
   useEffect(() => {
     const timer = setInterval(() => {
@@ -164,6 +129,22 @@ const CartPage = () => {
     
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-scroll suggested products
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      const timer = setInterval(() => {
+        const visibleCards = 3;
+        const maxScroll = Math.max(0, (suggestedMedicines.length - visibleCards) * 250);
+        setSuggestedScrollPosition((prev) => {
+          if (prev >= maxScroll) return 0;
+          return Math.min(maxScroll, prev + 250 * 3);
+        });
+      }, 4000);
+      
+      return () => clearInterval(timer);
+    }
+  }, [cartItems.length]);
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 6, px: { xs: 2, sm: 3 } }}>
@@ -179,8 +160,7 @@ const CartPage = () => {
       
       <Grid container spacing={3}>
         {/* Left section - Banners and Cart Items */}
-        <Grid size={{xs:12,md:8
-        }}>
+        <Grid size={{xs:12,md:8}}>
           {/* Banner Carousel */}
           <Box sx={{ 
             mb: 3, 
@@ -250,18 +230,74 @@ const CartPage = () => {
             </Typography>
             
             {cartItems.length === 0 ? (
-              <Paper elevation={1} sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="body1" sx={{ mb: 2 }}>Your cart is empty</Typography>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  sx={{ mt: 2 }}
-                  onClick={handleContinueShopping}
-                  startIcon={<Home size={16} />}
-                >
-                  Continue Shopping
-                </Button>
-              </Paper>
+              <>
+                <Paper elevation={1} sx={{ p: 4, textAlign: 'center', mb: 3 }}>
+                  <Typography variant="body1" sx={{ mb: 2 }}>Your cart is empty</Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    sx={{ mt: 2 }}
+                    onClick={handleContinueShopping}
+                    startIcon={<Home size={16} />}
+                  >
+                    Continue Shopping
+                  </Button>
+                  
+                </Paper>
+                
+                {/* Suggested Products Carousel */}
+                <Paper elevation={1} sx={{ p: 3, borderRadius: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" fontWeight="bold">
+                      Suggested for You
+                    </Typography>
+                    <Box>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleSuggestedScroll('left')}
+                        disabled={suggestedScrollPosition === 0}
+                        sx={{ mr: 0.5 }}
+                      >
+                        <ChevronLeft size={20} />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleSuggestedScroll('right')}
+                        disabled={suggestedScrollPosition >= (suggestedMedicines.length - 3) * 250}
+                      >
+                        <ChevronRight size={20} />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ position: 'relative', overflow: 'hidden' }}>
+                    <Box 
+                      sx={{ 
+                        display: 'flex',
+                        transform: `translateX(-${suggestedScrollPosition}px)`,
+                        transition: 'transform 0.3s ease-in-out',
+                        gap: 2
+                      }}
+                    >
+                      {suggestedMedicines.map((product) => (
+                        <Box key={product.id} sx={{ minWidth: 240, flexShrink: 0 }}>
+                          <ProductCard product={product} />
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ textAlign: 'center', mt: 3 }}>
+                    <Button 
+                      variant="outlined" 
+                      color="primary"
+                      endIcon={<ChevronRight size={16} />}
+                    >
+                      View All Medicines
+                    </Button>
+                  </Box>
+                </Paper>
+              </>
             ) : (
               cartItems.map((item) => (
                 <Paper 
@@ -399,7 +435,7 @@ const CartPage = () => {
               </Button>
             )}
             
-            {/* NetMeds First Banner */}
+            {/* Dawasansaar First Banner */}
             {cartItems.length > 0 && (
               <Paper
                 elevation={0}
@@ -414,7 +450,7 @@ const CartPage = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Tag size={16} color="#e91e63" />
                   <Typography variant="subtitle2" color="#e91e63" fontWeight="bold" sx={{ ml: 1 }}>
-                    NETMEDS FIRST
+                    Dawasansaar FIRST
                   </Typography>
                   <Typography variant="body2" sx={{ ml: 1 }}>
                     customers get extra <strong>₹6.68</strong> cashback on this order
@@ -493,8 +529,8 @@ const CartPage = () => {
           </Box>
         </Grid>
         
-        {/* Right side - Payment Summary */}
-        <Grid size={{xs:12,md:4}}>
+        {/* Right side - Payment Summary and Suggested Products */}
+        <Grid size={{xs:12,md:4}}>          
           {/* Promo Code Section */}
           <Paper elevation={1} sx={{ p: 3, mb: 2, borderRadius: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" mb={2}>
@@ -687,7 +723,7 @@ const CartPage = () => {
             </Button>
             
             <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              Netmeds is a technology platform to facilitate transaction of business. The products and services are offered for sale by the sellers. The user authorizes the delivery personnel to be his agent for delivery of the goods. For details read Terms & Conditions
+              Dawasansaar is a technology platform to facilitate transaction of business. The products and services are offered for sale by the sellers. The user authorizes the delivery personnel to be his agent for delivery of the goods. For details read Terms & Conditions
             </Typography>
           </Paper>
         </Grid>

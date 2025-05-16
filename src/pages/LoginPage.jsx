@@ -53,7 +53,7 @@ const SocialLoginButton = styled(Button)(({ theme }) => ({
     },
 }));
 
-export default function NetmedsLogin() {
+export default function DawasansaarLogin() {
     const theme = useTheme();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isPhoneValid, setIsPhoneValid] = useState(true);
@@ -96,7 +96,7 @@ export default function NetmedsLogin() {
 
                     <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, width: { xs: 'auto', md: '60%' }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <Typography variant="h5" fontWeight="bold" color="text.primary" sx={{ mb: 1, fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
-                            Sign In / Sign Up
+                           User Sign In / Sign Up
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                             Sign up or Sign in to access your orders, special offers, health tips and more!

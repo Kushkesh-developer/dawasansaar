@@ -4,7 +4,9 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from "./pages/Home";
 import CartPage from "./pages/CartPage";
-import NetmedsLogin from "./pages/LoginPage";
+import DawasansaarLogin from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfileaPage";
+
 
 // Create a custom theme for Dawa Sansaar
 const theme = createTheme({
@@ -60,7 +62,8 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/login" element={<NetmedsLogin />} />
+            <Route path="/login" element={<DawasansaarLogin />} />
+            <Route path="/profile" element={<ProfilePage />} />
             {/* Additional routes will be added here */}
           </Routes>
         </BrowserRouter>
