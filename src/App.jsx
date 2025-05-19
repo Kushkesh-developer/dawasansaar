@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from "./pages/Home";
 import CartPage from "./pages/CartPage";
-import DawasansaarLogin from "./pages/LoginPage";
+import Login from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfileaPage";
 
 
