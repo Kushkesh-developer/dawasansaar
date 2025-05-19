@@ -62,7 +62,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/login" element={<DawasansaarLogin />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<ProfilePage />} />
             {/* Additional routes will be added here */}
           </Routes>

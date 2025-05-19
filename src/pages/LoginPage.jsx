@@ -53,7 +53,7 @@ const SocialLoginButton = styled(Button)(({ theme }) => ({
     },
 }));
 
-export default function DawasansaarLogin() {
+export default function Login() {
     const theme = useTheme();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isPhoneValid, setIsPhoneValid] = useState(true);
