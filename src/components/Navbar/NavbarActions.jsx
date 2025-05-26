@@ -41,8 +41,8 @@ const NavbarActions = () => {
 
             <Tooltip title="Shopping Cart">
                 <IconButton
-                    component={Link}     // ✅ Enable navigation
-                    to="/cart"           // ✅ Route to /cart
+                    component={Link}     
+                    to="/cart"           
                     aria-label="cart"
                 >
                     <Badge badgeContent={0} color="primary">

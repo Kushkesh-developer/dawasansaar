@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Box, 
   Button, 
@@ -15,38 +15,9 @@ import {
 } from "@mui/material";
 import { ChevronDown } from "lucide-react";
 
-// Mock data for categories
-const CATEGORIES = {
-  medicine: {
-    label: "Medicines",
-    subcategories: [
-      "Fever & Pain Management",
-      "Cough & Cold",
-      "Digestive Health",
-      "Vitamins & Supplements",
-      "Skin Care",
-      "Diabetes Care",
-      "Heart Health",
-    ],
-  },
-  surgical: {
-    label: "Surgical Items",
-    subcategories: [
-      "Masks & Face Shields",
-      "Gloves",
-      "First Aid",
-      "Bandages & Dressings",
-      "Syringes & Needles",
-      "Medical Devices",
-      "Personal Protective Equipment",
-    ],
-  },
-};
-
-const CategoryMenu = ({ category }) => {
+const CategoryMenu = ({ label, subcategories }) => {
   const [open, setOpen] = useState(false);
   const anchorRef = React.useRef(null);
-  const categoryData = CATEGORIES[category];
   const theme = useTheme();
   const isMobileScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -78,12 +49,11 @@ const CategoryMenu = ({ category }) => {
           })
         }}
       >
-        {categoryData.label}
+        {label}
       </Button>
       <Popper
         open={open}
         anchorEl={anchorRef.current}
-        role={undefined}
         placement={isMobileScreen ? "bottom" : "bottom-start"}
         transition
         disablePortal
@@ -103,14 +73,14 @@ const CategoryMenu = ({ category }) => {
               }}
             >
               <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem={open} id={`${category}-menu`}>
+                <MenuList autoFocusItem={open}>
                   <MenuItem disabled>
                     <Typography variant="subtitle2" color="primary">
-                      All {categoryData.label}
+                      All {label}
                     </Typography>
                   </MenuItem>
                   <Divider />
-                  {categoryData.subcategories.map((subcat) => (
+                  {subcategories.map((subcat) => (
                     <MenuItem key={subcat} onClick={handleClose}>
                       {subcat}
                     </MenuItem>
@@ -126,8 +96,30 @@ const CategoryMenu = ({ category }) => {
 };
 
 const CategoriesMenu = () => {
+  const [categories, setCategories] = useState([]);
   const theme = useTheme();
   const isMobileScreen = useMediaQuery(theme.breakpoints.down('md'));
+  useEffect(() => {
+    fetch('https://f2ce-2405-201-300b-170-d7ad-1877-b4c8-d40e.ngrok-free.app/categories', {
+      method: 'GET',
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      },
+    //   credentials: 'include' // only if you're using cookies/session
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch categories");
+        return res.json();
+      })
+      .then((data) => {
+        setCategories(data);
+      })
+      .catch((err) => {
+        console.error("Error loading categories:", err);
+      });
+  }, []);
+  
+  
 
   return (
     <Box 
@@ -152,8 +144,13 @@ const CategoriesMenu = () => {
           justifyContent: { xs: "center", md: "flex-start" } 
         }}
       >
-        <CategoryMenu category="medicine" />
-        <CategoryMenu category="surgical" />
+        {categories.map((cat) => (
+          <CategoryMenu
+            key={cat.label}
+            label={cat.label}
+            subcategories={cat.subcategories}
+          />
+        ))}
       </Box>
     </Box>
   );
