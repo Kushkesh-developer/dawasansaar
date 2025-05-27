@@ -80,8 +80,8 @@ const CategoryMenu = ({ label, subcategories }) => {
                     </Typography>
                   </MenuItem>
                   <Divider />
-                  {subcategories.map((subcat) => (
-                    <MenuItem key={subcat} onClick={handleClose}>
+                  {subcategories && subcategories.map((subcat, index) => (
+                    <MenuItem key={`${subcat}-${index}`} onClick={handleClose}>
                       {subcat}
                     </MenuItem>
                   ))}
@@ -97,29 +97,95 @@ const CategoryMenu = ({ label, subcategories }) => {
 
 const CategoriesMenu = () => {
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const theme = useTheme();
   const isMobileScreen = useMediaQuery(theme.breakpoints.down('md'));
+  
   useEffect(() => {
-    fetch('https://f2ce-2405-201-300b-170-d7ad-1877-b4c8-d40e.ngrok-free.app/categories', {
-      method: 'GET',
-      headers: {
-        "ngrok-skip-browser-warning": "true"
-      },
-    //   credentials: 'include' // only if you're using cookies/session
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        return res.json();
-      })
-      .then((data) => {
-        setCategories(data);
-      })
-      .catch((err) => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://ruby-dawasansar.onrender.com/categories', {
+          method: 'GET',
+          headers: {
+            "ngrok-skip-browser-warning": "true"
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const response_data = await response.json();
+        
+        // Extract the categories array from the response
+        const categoriesArray = response_data.data || response_data;
+        
+        // Ensure we have an array and transform the data structure
+        if (Array.isArray(categoriesArray)) {
+          const transformedCategories = categoriesArray.map(item => ({
+            id: item.id,
+            label: item.attributes.name,
+            subcategories: item.attributes.subcategories || [] // Add subcategories if they exist
+          }));
+          setCategories(transformedCategories);
+        } else {
+          console.warn('API response does not contain a valid categories array:', response_data);
+          setCategories([]);
+        }
+      } catch (err) {
         console.error("Error loading categories:", err);
-      });
+        setError(err.message);
+        setCategories([]); // Ensure categories remains an array
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
   }, []);
-  
-  
+
+  // Don't render anything while loading
+  if (loading) {
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        sx={{ 
+          width: "100%", 
+          borderTop: "1px solid #eee", 
+          borderBottom: "1px solid #eee",
+          py: 2,
+        }}
+      >
+        <Typography>Loading categories...</Typography>
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        sx={{ 
+          width: "100%", 
+          borderTop: "1px solid #eee", 
+          borderBottom: "1px solid #eee",
+          py: 2,
+        }}
+      >
+        <Typography color="error">Error loading categories: {error}</Typography>
+      </Box>
+    );
+  }
+
+  // Don't render if no categories
+  if (!categories.length) {
+    return null;
+  }
 
   return (
     <Box 
@@ -146,7 +212,7 @@ const CategoriesMenu = () => {
       >
         {categories.map((cat) => (
           <CategoryMenu
-            key={cat.label}
+            key={cat.id}
             label={cat.label}
             subcategories={cat.subcategories}
           />
