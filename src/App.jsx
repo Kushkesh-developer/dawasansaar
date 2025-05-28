@@ -4,10 +4,11 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { AuthProvider } from "./contexts/AuthContext";
 import HomePage from "./pages/Home";
 import CartPage from "./pages/CartPage";
-import Login from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 import ProfilePage from "./pages/ProfileaPage";
 import PrescriptionPage from "./pages/PrescriptionPage";
 import ProductDescriptionPage from "./pages/ProductDescriptionPage";
+import SignInPage from "./pages/SignInPage";
 
 
 // Create a custom theme for Dawa Sansaar
@@ -64,7 +65,8 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path='/prescription' element={<PrescriptionPage/>}/>
             <Route path="/product/:id" element={<ProductDescriptionPage />} />

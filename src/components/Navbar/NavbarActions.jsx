@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Button,
@@ -6,16 +6,58 @@ import {
     IconButton,
     Tooltip,
     useMediaQuery,
-    useTheme
+    useTheme,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography
 } from "@mui/material";
 import { Upload, ShoppingCart, User } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
-import { Link } from "react-router-dom"; // ✅ Add this import
 
 const NavbarActions = () => {
-    const { user, logout } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+    // Check for token in localStorage on component mount and when localStorage changes
+    useEffect(() => {
+        const checkAuthStatus = () => {
+            const token = localStorage.getItem('authToken');
+            setIsLoggedIn(!!token);
+        };
+
+        // Check initially
+        checkAuthStatus();
+
+        // Listen for storage changes (useful if user logs in/out in another tab)
+        window.addEventListener('storage', checkAuthStatus);
+
+        return () => {
+            window.removeEventListener('storage', checkAuthStatus);
+        };
+    }, []);
+
+    const handleLogout = () => {
+        // Remove token from localStorage
+        localStorage.removeItem('authToken');
+        
+        // Update state
+        setIsLoggedIn(false);
+        
+        // Show logout confirmation dialog
+        setShowLogoutDialog(true);
+    };
+
+    const handleCloseLogoutDialog = () => {
+        setShowLogoutDialog(false);
+    };
+
+    const handleLogin = () => {
+        // Redirect to signin page
+        window.location.href = "/signin";
+    };
 
     return (
         <Box display="flex" alignItems="center" gap={1}>
@@ -26,8 +68,7 @@ const NavbarActions = () => {
             </Tooltip>
 
             <Button
-                component={Link}
-                to="/profile"
+                onClick={() => window.location.href = "/profile"}
                 variant="outlined"
                 size="small"
                 sx={{
@@ -41,8 +82,7 @@ const NavbarActions = () => {
 
             <Tooltip title="Shopping Cart">
                 <IconButton
-                    component={Link}     
-                    to="/cart"           
+                    onClick={() => window.location.href = "/cart"}
                     aria-label="cart"
                 >
                     <Badge badgeContent={0} color="primary">
@@ -51,11 +91,11 @@ const NavbarActions = () => {
                 </IconButton>
             </Tooltip>
 
-            {user ? (
+            {isLoggedIn ? (
                 <Button
                     variant="outlined"
                     startIcon={<User size={16} />}
-                    onClick={logout}
+                    onClick={handleLogout}
                     size="small"
                     sx={{ borderRadius: "20px", ml: 1 }}
                 >
@@ -65,13 +105,42 @@ const NavbarActions = () => {
                 <Button
                     variant="contained"
                     startIcon={<User size={16} />}
-                    href="/login"
+                    onClick={handleLogin}
                     size="small"
                     sx={{ borderRadius: "20px", ml: 1 }}
                 >
                     Login
                 </Button>
             )}
+
+            {/* Logout Confirmation Dialog */}
+            <Dialog
+                open={showLogoutDialog}
+                onClose={handleCloseLogoutDialog}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle>
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <User size={20} />
+                        Logged Out Successfully
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        You have been successfully logged out. Your session has been cleared.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button 
+                        onClick={handleCloseLogoutDialog} 
+                        variant="contained"
+                        fullWidth
+                    >
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
