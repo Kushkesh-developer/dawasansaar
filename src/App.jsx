@@ -9,6 +9,10 @@ import ProfilePage from "./pages/ProfileaPage";
 import PrescriptionPage from "./pages/PrescriptionPage";
 import ProductDescriptionPage from "./pages/ProductDescriptionPage";
 import SignInPage from "./pages/SignInPage";
+import AccountInformationPage from "./pages/AccountInformation";
+import WishlistPage from "./components/WishListPage";
+import MyPrescriptionPage from "./pages/MyPrescription";
+import EditProfilePage from "./pages/EditPages";
 
 
 // Create a custom theme for Dawa Sansaar
@@ -67,7 +71,13 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfilePage />}>
+              <Route path="account" element={<AccountInformationPage />} />
+              <Route path="wishlist" element={<WishlistPage />} />
+              <Route path="prescription" element={<MyPrescriptionPage />} />
+              <Route path="edit" element={<EditProfilePage />} />
+            </Route>
+          
             <Route path='/prescription' element={<PrescriptionPage/>}/>
             <Route path="/product/:id" element={<ProductDescriptionPage />} />
             {/* Additional routes will be added here */}

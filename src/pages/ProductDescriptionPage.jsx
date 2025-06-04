@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -35,55 +35,110 @@ import {
   Remove,
   Add,
 } from "@mui/icons-material";
-import Navbar from "../components/Navbar/Navbar";
-import ReviewForm from "../components/ReviewForm";
 
-const ProductDescriptionPage = () => {
+const ProductDescriptionPage = ({ productId = 2 }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [userReviews, setUserReviews] = useState([]);
-
-  // Mock product data based on Netmeds example
-  const product = {
-    id: 1,
-    name: "Bayer Supradyn Immuno Tablet Turmeric Tulsi 30s",
-    brand: "Bayer",
-    category: "Immunity Booster",
-    mrp: 525,
-    salePrice: 446,
-    discount: 15,
-    rating: 4.3,
-    ratingCount: 127,
-    inStock: true,
-    fastDelivery: true,
-    prescription: false,
-    images: [
-        "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=400&fit=crop&crop=center",
-      ],
-    keyIngredients: [
-      "Turmeric Extract",
-      "Tulsi Extract", 
-      "Vitamin C",
-      "Vitamin D3",
-      "Zinc",
-      "Selenium"
-    ],
-    benefits: [
-      "Boosts immunity naturally",
-      "Rich in antioxidants",
-      "Supports respiratory health",
-      "Enhances energy levels",
-      "Helps fight infections"
-    ],
-    description: "Bayer Supradyn Immuno is a comprehensive immunity booster that combines the power of traditional herbs like Turmeric and Tulsi with essential vitamins and minerals. This scientifically formulated supplement helps strengthen your body's natural defense system.",
-    directions: "Take 1 tablet daily with water, preferably after meals or as directed by healthcare professional.",
-    storage: "Store in a cool, dry place away from direct sunlight. Keep out of reach of children."
-  };
-
+  const [productData, setProductData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Fetch product data from API
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`https://ruby-dawasansar.onrender.com/products/${productId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch product');
+        }
+        const data = await response.json();
+        setProductData(data);
+      } catch (err) {
+        setError(err.message);
+        // Fallback data if API fails
+        setProductData({
+          data: {
+            id: "2",
+            type: "product",
+            attributes: {
+              id: 2,
+              name: "headach tablet",
+              description: "450 mg tablet",
+              price: 100,
+              category: "Tablet",
+              images: [
+                "https://ruby-dawasansar.onrender.com//rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NiwicHVyIjoiYmxvYl9pZCJ9fQ==--6448fb1d9c1f0dd7ba3b2077995f614e44efdad3/Home2Product1.png",
+                "https://ruby-dawasansar.onrender.com//rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6NywicHVyIjoiYmxvYl9pZCJ9fQ==--e6569c7ed185168dd2f01a772b89916202df02d2/Home2Product2.png"
+              ]
+            }
+          }
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <Typography>Loading product...</Typography>
+      </Box>
+    );
+  }
+
+  if (!productData) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <Typography color="error">Failed to load product data</Typography>
+      </Box>
+    );
+  }
+
+  // Product data with API integration and static fallbacks
+  const product = {
+    id: productData.data.attributes.id,
+    name: productData.data.attributes.name || "Product Name",
+    brand: "Generic Pharma", // Static fallback
+    category: productData.data.attributes.category || "Medicine",
+    mrp: Math.round((productData.data.attributes.price || 100) * 1.25), // Calculate MRP as 25% higher
+    salePrice: productData.data.attributes.price || 100,
+    discount: 20, // Static fallback
+    rating: 4.2, // Static fallback
+    ratingCount: 89, // Static fallback
+    inStock: true, // Static fallback
+    fastDelivery: true, // Static fallback
+    prescription: false, // Static fallback
+    images: (productData.data.attributes.images && productData.data.attributes.images.length > 0) 
+      ? productData.data.attributes.images 
+      : [
+          "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&crop=center",
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop&crop=center"
+        ],
+    keyIngredients: [ // Static fallback
+      "Active Pharmaceutical Ingredient",
+      "Excipients", 
+      "Binding agents",
+      "Disintegrants",
+      "Coating materials"
+    ],
+    benefits: [ // Static fallback based on category
+      productData.data.attributes.category === "Tablet" ? "Fast-acting relief" : "Effective treatment",
+      "Clinically tested formula",
+      "Safe and reliable",
+      "Easy to use",
+      "Quality assured"
+    ],
+    description: productData.data.attributes.description || "This is a high-quality pharmaceutical product designed for effective treatment.",
+    directions: "Take as directed by healthcare professional. Follow prescribed dosage.", // Static fallback
+    storage: "Store in a cool, dry place away from direct sunlight. Keep out of reach of children." // Static fallback
+  };
 
   const handleQuantityChange = (change) => {
     setQuantity(prev => Math.max(1, prev + change));
@@ -116,11 +171,23 @@ const ProductDescriptionPage = () => {
 
   return (
     <Box>
-      <Navbar />
+      {/* Simple Navbar */}
+      <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2, mb: 3 }}>
+        <Typography variant="h5" component="h1">
+          DawaSansar - Online Pharmacy
+        </Typography>
+      </Box>
+      
       <Container maxWidth="xl" sx={{ py: 3 }}>
+        {error && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            API Error: {error} - Showing fallback data
+          </Alert>
+        )}
+        
         <Grid container spacing={4}>
           {/* Product Images */}
-          <Grid size={{xs:12,md:5}}>
+          <Grid item xs={12} md={5}>
             <Paper sx={{ p: 2 }}>
               <Box sx={{ mb: 2, position: "relative" }}>
                 <img
@@ -131,6 +198,9 @@ const ProductDescriptionPage = () => {
                     height: 400,
                     objectFit: "contain",
                     backgroundColor: "#f5f5f5",
+                  }}
+                  onError={(e) => {
+                    e.target.src = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&crop=center";
                   }}
                 />
                 {product.discount > 0 && (
@@ -170,6 +240,9 @@ const ProductDescriptionPage = () => {
                         height: "100%",
                         objectFit: "contain",
                       }}
+                      onError={(e) => {
+                        e.target.src = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&crop=center";
+                      }}
                     />
                   </Box>
                 ))}
@@ -178,7 +251,7 @@ const ProductDescriptionPage = () => {
           </Grid>
 
           {/* Product Details */}
-          <Grid size={{xs:12,md:7}}>
+          <Grid item xs={12} md={7}>
             <Box>
               <Typography variant="h5" component="h1" gutterBottom fontWeight={600}>
                 {product.name}
@@ -264,25 +337,25 @@ const ProductDescriptionPage = () => {
               {/* Features */}
               <Box sx={{ mb: 3 }}>
                 <Grid container spacing={2}>
-                  <Grid size={{xs:6}}>
+                  <Grid item xs={6}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <LocalShipping sx={{ color: "#27AE60" }} />
                       <Typography variant="body2">Free Delivery</Typography>
                     </Box>
                   </Grid>
-                  <Grid size={{xs:6}}>
+                  <Grid item xs={6}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Security sx={{ color: "#27AE60" }} />
                       <Typography variant="body2">100% Genuine</Typography>
                     </Box>
                   </Grid>
-                  <Grid size={{xs:6}}>
+                  <Grid item xs={6}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <AccessTime sx={{ color: "#27AE60" }} />
                       <Typography variant="body2">24h Delivery</Typography>
                     </Box>
                   </Grid>
-                  <Grid size={{xs:6}}>
+                  <Grid item xs={6}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <EmojiEvents sx={{ color: "#27AE60" }} />
                       <Typography variant="body2">FDA Approved</Typography>
@@ -307,7 +380,7 @@ const ProductDescriptionPage = () => {
           </Grid>
 
           {/* Product Information Tabs */}
-          <Grid size={{xs:12}}>
+          <Grid item xs={12}>
             <Paper sx={{ mt: 4 }}>
               <Tabs
                 value={selectedTab}
@@ -326,6 +399,9 @@ const ProductDescriptionPage = () => {
                 <Box sx={{ px: 3, pb: 2 }}>
                   <Typography variant="body1" paragraph>
                     {product.description}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Category:</strong> {product.category}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     <strong>Storage:</strong> {product.storage}
@@ -384,10 +460,23 @@ const ProductDescriptionPage = () => {
                     <Typography variant="h6">
                       Customer Reviews ({product.ratingCount + userReviews.length})
                     </Typography>
-                    <ReviewForm 
-                      productName={product.name}
-                      onSubmitReview={handleSubmitReview}
-                    />
+                    <Button 
+                      variant="outlined" 
+                      size="small"
+                      onClick={() => {
+                        const rating = prompt("Rate this product (1-5):");
+                        const review = prompt("Write your review:");
+                        if (rating && review) {
+                          handleSubmitReview({
+                            rating: parseInt(rating),
+                            review: review,
+                            timestamp: Date.now()
+                          });
+                        }
+                      }}
+                    >
+                      Write Review
+                    </Button>
                   </Box>
                   
                   <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
@@ -428,7 +517,7 @@ const ProductDescriptionPage = () => {
                   <Typography variant="body2" color="text.secondary">
                     {userReviews.length === 0 
                       ? "Be the first to review this product!" 
-                      : "More reviews will be displayed here when integrated with the backend API."
+                      : "Thank you for your reviews!"
                     }
                   </Typography>
                 </Box>
@@ -441,4 +530,4 @@ const ProductDescriptionPage = () => {
   );
 };
 
-export default ProductDescriptionPage;
+export default ProductDescriptionPage;  

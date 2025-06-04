@@ -1,62 +1,84 @@
-import { createContext, useContext, useState } from "react";
+// authContext.js
+import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock functions for auth actions
-  const login = async (email, password) => {
-    setLoading(true);
-    try {
-      // Mock successful login
-      if (!email || !password) {
-        throw new Error("Email and password are required.");
-      }
-      setUser({ id: "123", name: "User", email });
-      return true;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error; // Re-throw the error for caller to catch
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    const storedUser = localStorage.getItem("user");
+
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
+    setLoading(false);
+  }, []);
+
+  const login = async (email, password) => {
+    const res = await fetch("https://ruby-dawasansar.onrender.com/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) throw new Error("Login failed");
+
+    const data = await res.json();
+    const authToken = data.token;
+    const userData = data.user;
+
+    localStorage.setItem("authToken", authToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setToken(authToken);
+    setUser(userData);
   };
 
   const signup = async (name, email, password) => {
-    setLoading(true);
-    try {
-      // Mock successful signup
-      if (!name || !email || !password) {
-        throw new Error("All fields are required for signup.");
-      }
-      setUser({ id: "123", name, email });
-      return true;
-    } catch (error) {
-      console.error("Signup error:", error);
-      throw error; // Re-throw the error
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetch("https://ruby-dawasansar.onrender.com/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    if (!res.ok) throw new Error("Signup failed");
+
+    const data = await res.json();
+    const authToken = data.token;
+    const userData = data.user;
+
+    localStorage.setItem("authToken", authToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setToken(authToken);
+    setUser(userData);
   };
 
   const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    setToken(null);
     setUser(null);
   };
 
   const value = {
     user,
+    token,
     loading,
     login,
     signup,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!token,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
